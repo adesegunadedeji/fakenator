@@ -9,8 +9,8 @@ if ($dbConnection->connect_error) {
 	exit;
 }
 
-// check to see if we were posted to
-$tmpOrigin = '';
+// Hardcoded the origin.
+$tmpOrigin = 'https://www.propublica.org';
 if(isset($_POST['tmpOrigin'])) {
 	$tmpOrigin = $_POST['tmpOrigin'];
 }

@@ -1,5 +1,4 @@
 <?php
-
 // connect to DB
 $dbConnection =  new mysqli(getenv('DBHOST'), getenv('DBUSR'), getenv('DBPASS'), getenv('DBSCHEMA'), getenv('DBPORT'));
 // if we cant connect, respond with server error
@@ -23,13 +22,19 @@ if(! $myKey = htmlspecialchars($_GET["q"]) ){
 	$myKey = '/';
 }
 
+//
+	if($_SERVER['REQUEST_METHOD'] === 'POST') {
+		($dbConnection->query("delete from cache.dataStore where `key` = '{$myKey}'")) ?error_log("Succesfully Deleted Record")
+		:error_log ("Error" . $dbConnection->error);
+	}
+	
 // look-up in cache data store
 $myDbResults = $dbConnection->query("select * from cache.dataStore where `key` = '$myKey'");
 
 // if we have data, 
 if($cacheRecord = $myDbResults->fetch_assoc()) {
 	// send response
-	respondWith($cacheRecord['header'], $cacheRecord['html']);
+	respondWith($cacheRecord['header'],  addRegButton($cacheRecord['html'], $adminPg));
 
 	// check expiry 
 	$now = date('YmdHis');
@@ -53,14 +58,49 @@ if($cacheRecord = $myDbResults->fetch_assoc()) {
 function respondWith($header, $payload) {
 	// break up header into lines
 	$headerLines = explode("\n",  $header);
-
 	// send each header line
 	foreach($headerLines as $h) {
 		header($h);
 	}
-
 	// send data
 	echo $payload;
 	return;
 }
 
+
+
+/* 
+For Pages with the query String admin=True, I have add a button at the bottom Left hand corner that will regenerate the pages' 
+cache and then refresh the page.
+*/
+$adminPg = htmlspecialchars($_GET["admin"]); 
+//Created a button that makes a Post request to refresh the current page.
+function addRegButton($myHtml, $adminPg) {
+	if($adminPg === false) {
+		return $myHtml;
+	}
+		//The idea is to use Regex to replace a string where all all matches are found iwth the replacement
+	$str1 = '/<head>/';
+	$str2 = '/<\/body>/';
+	$pattern1 = <<<EOT
+	<head>
+	<style>
+	button.refreshBtn{
+		position: fixed;
+		bottom: 0;
+		background: #4CAF50;
+		padding:	5px;
+		margin: .5px;
+	}</style>
+	EOT;
+
+	$pattern2 = <<<EOT
+		<form action="" method="POST">
+		<button class="refreshBtn">Refresh</button>
+		</form>
+		</body>
+	EOT;
+	$myHtml = preg_replace($str1, $pattern1, $myHtml);
+	$myHtml = preg_replace($str2, $pattern2, $myHtml);
+    return $myHtml;
+}
