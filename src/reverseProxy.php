@@ -72,6 +72,8 @@ function respondWith($header, $payload) {
 /* 
 For Pages with the query String admin=True, I have add a button at the bottom Left hand corner that will regenerate the pages' 
 cache and then refresh the page.
+//The idea is to use Regex to replace a string where all all matches are found with the replacement pattern
+The css properties are designed to maintain the DOM order.
 */
 $adminPg = htmlspecialchars($_GET["admin"]); 
 //Created a button that makes a Post request to refresh the current page.
@@ -79,7 +81,7 @@ function addRegButton($myHtml, $adminPg) {
 	if($adminPg === false) {
 		return $myHtml;
 	}
-		//The idea is to use Regex to replace a string where all all matches are found iwth the replacement
+		
 	$str1 = '/<head>/';
 	$str2 = '/<\/body>/';
 	$pattern1 = <<<EOT
@@ -88,9 +90,8 @@ function addRegButton($myHtml, $adminPg) {
 	button.refreshBtn{
 		position: fixed;
 		bottom: 0;
-		background: #4CAF50;
-		padding:	5px;
-		margin: .5px;
+		background: #4CAF50; 
+		padding: 5px;
 	}</style>
 	EOT;
 
